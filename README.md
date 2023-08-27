@@ -22,6 +22,7 @@ space to actually run the program.
 
 Below is a simplified diagram of how Linux organizes the memory space when it runs a program.
 
+```bash
 .───────────────────────────────────────.  Address 2^n - 1, where n is the number of address bits
 |                                       |  (0xFFFFFFFF for the 32-bit address space)
 |         Kernel address space          |
@@ -66,6 +67,7 @@ Below is a simplified diagram of how Linux organizes the memory space when it ru
 +───────────────────────────────────────+
 |                                       |
 '───────────────────────────────────────'  Address 0x00000000
+```
 
 Before examining the diagram in more detail, there are a few things to note.
 
