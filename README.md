@@ -13,11 +13,11 @@ management. In this assignment, you will learn about Linux's memory layout. Alon
 also write a few C programs that examine the memory layout, which also give us an opportunity to
 take a deeper look at pointers.
 
-## Task 0: Understanding the Linux memory layout and C pointers
+## Linux memory layout and C pointers
 
-Every single thing in your program, all the statements, all the variables, all the function calls,
-occupies memory space when you run the program. Your OS organizes the memory space in a certain way
-using its pre-defined memory layout and your program's code interacts with the organized memory
+Every single thing in your program, all the statements, all the variables, and all the function
+calls, occupies memory space when you run the program. Your OS organizes the memory space in a
+certain way using its pre-defined memory layout and your program's code interacts with the memory
 space to actually run the program.
 
 Below is a simplified diagram of how Linux organizes the memory space when it runs a program.
@@ -102,7 +102,7 @@ Before examining the diagram in more detail, there are a few things to note.
 Let's examine the address layout segment-by-segment from the bottom. There are some activities you
 need to do, so don't forget to start recording with `record`.
 
-### Text segment
+## Task 0: Understanding the text segment
 
 The OS loads the program itself to this segment, i.e., the text segment contains the code of the
 program. This means that your code resides somewhere in memory when you're running your program. In
@@ -172,14 +172,16 @@ Look for the text section and look for the matching bytes that you get from runn
 will find that all 64 bytes are present in the output of `objdump` in exactly the same order as our
 program prints out.
 
-### Data and BSS segments
+(You can stop recording and come back later, or continue with the next task.)
+
+## Task 1: Understanding the data and BSS segments
 
 The data and BSS segments store the values for static variables in a program. The data segment
 stores *initialized* global or static variables, while the BSS segment stores *uninitialized* global
 or static variables. For example, if you have `static char *example_string = "This is
 initialized.\n";` somewhere in your program, it gets stored in the data segment. On the other hand,
 if you have `static char *example_string;` somewhere in your program, it gets stored in the BSS
-segment. Let's do a quick activity to understand this better. Make sure you `record`.
+segment. Let's do an activity to understand this better. Make sure you `record`.
 
 Create a file named `data_and_bss.c` and write the following code.
 
@@ -192,10 +194,10 @@ char data_char0 = '0';
 char data_char1 = '1';
 
 int main() {
-  printf("data_char0: %p\n", &data_char0);
-  printf("data_char1: %p\n", &data_char1);
-  printf("bss_char0: %p\n", &bss_char0);
-  printf("bss_char1: %p\n", &bss_char1);
+  printf("data_char0 address: %p\n", &data_char0);
+  printf("data_char1 address: %p\n", &data_char1);
+  printf("bss_char0 address: %p\n", &bss_char0);
+  printf("bss_char1 address: %p\n", &bss_char1);
 
   return 0;
 }
@@ -211,11 +213,11 @@ Makefile from the above [Text segment](#text-segment) section, add a new target 
 that produces an executable of the same name (`data_and_bss`). Once that's done, compile it and run
 it. You should get an output similar to the following:
 
-```c
-data_char0: 0xaaaacdfe1038
-data_char1: 0xaaaacdfe1039
-bss_char0: 0xaaaacdfe103b
-bss_char1: 0xaaaacdfe103c
+```bash
+data_char0 address: 0xaaaacdfe1038
+data_char1 address: 0xaaaacdfe1039
+bss_char0 address: 0xaaaacdfe103b
+bss_char1 address: 0xaaaacdfe103c
 ```
 
 Based on this output, you can draw a diagram that visualizes how these are stored such as the
@@ -251,16 +253,350 @@ Why do we need a separate BSS segment? Why can't it be just the data segment? Th
 BSS segment is automatically filled with zeros so we can still initialize uninitialized global and
 static variables. This helps ensure that these variables start with a known and predictable value.
 
-### Stack
+(You can stop recording and come back later, or continue with the next task.)
 
-The stack is the memory space where local variables, function parameters, and function return values
-are stored. The size of the stack typically changes as your program runs
+## Task 2: Understanding the stack segment
 
-### Memory mapping
+The stack segment, sometimes referred to as *the call stack* or just *the stack*, is the memory
+space where local variables, function parameters, and function return values are stored. A typical
+program has multiple functions, and the stack's size changes as different functions get called.
+Let's do a couple of activities to learn about this more. Make sure you `record` if you are not
+doing it already.
 
-### Heap
+### Stack basics
 
-### Kernel address space
+Create a file named `stack_basics.c` and write the code below. Also, add a new target `stack_basics`
+to the same Makefile from previous sections that produces an executable of the same name with `make
+stack_basics`.
 
-This space is only used by the Linux kernel and user programs cannot access it. If a user program
-accesses this address space, the OS will terminate the program with a segmentation fault.
+```c
+#include <stdint.h>
+#include <stdio.h>
+
+void test0(void) {
+  int8_t local0 = 1;
+  int8_t local_array[3] = {2, 3, 4};
+  int8_t local1 = 5;
+
+  printf("test0:\n");
+  printf("  local0 address: %p\n", &local0);
+  printf("  local_array[0] address: %p\n", local_array);
+  printf("  local_array[1] address: %p\n", (local_array + 1));
+  printf("  local_array[2] address: %p\n", (local_array + 2));
+  printf("  local1 address: %p\n", &local1);
+}
+
+int main(void) {
+  test0();
+}
+```
+
+Compile and run it. You should get an output similar to the following:
+
+```bash
+test0:
+  local0 address: 0xffffdf138fbf
+  local_array[0] address: 0xffffdf138fbc
+  local_array[1] address: 0xffffdf138fbd
+  local_array[2] address: 0xffffdf138fbe
+  local1 address: 0xffffdf138fbb
+```
+
+You can visualize this as follows:
+
++────────────────+
+|     local0     | 0xffffdf138fbf
++────────────────+
+| local_array[2] | 0xffffdf138fbe
++────────────────+
+| local_array[1] | 0xffffdf138fbd
++────────────────+
+| local_array[0] | 0xffffdf138fbc
++────────────────+
+|     local1     | 0xffffdf138fbb
++────────────────+
+
+These local variables are placed in the stack in the order of definition. However, the stack grows
+*downward*, meaning that a variable occupies a higher address first. In the above example, `local0`
+occupies the highest address above `local_array`. In turn, `local_array` occupies the next highest
+address above `local1`. Notice that for `local_array`, a lower index still occupies a lower address.
+
+Since all the variables are placed consecutively in the stack, we need to be careful when using
+pointers or arrays, as we can inadvertently access other variables. Add the following function to
+`stack.c` and call the function from `main()`.
+
+```c
+void test1(void) {
+  int8_t local0 = 1;
+  int8_t local_array[3] = {2, 3, 4};
+  int8_t local1 = 5;
+
+  printf("test1:\n");
+  printf("  local0 value: %d\n", local0);
+
+  local_array[3] = 24;
+
+  printf("  local0 value: %d\n", local0);
+}
+```
+
+If you add this code, our linter will give a warning regarding the array usage. As the warning
+message says, `local_array` only has three elements. However, `local_array[3]` is accessing the 4th
+element, which `local_array` does not have by definition. Regardless, we can still use the
+expression `local_array[3]` because an array in C is nothing more than a convenient pointer.
+`local_array[3]` is simply `*(local_array + 3)`.
+
+Now, compile the code. The compiler will also give an array warning but we can ignore it for the
+sake of our activity. Run it and check the output.
+
+Excluding the output from `test0()`, your output should show the following:
+
+```bash
+test1:
+  local0 value: 1
+  local0 value: 24
+```
+
+In the code, `local0` is initialized to 1, and there is no other place where we directly change the
+value of `local0`. However, the second `printf()` prints out 24, not 1. What happened? The reason is
+that `local_array[3]` points to the memory address of `local0`. So when we assign 24 to
+`local_array[3]`, we are writing to the memory space occupied by `local0`. Let's visualize this.
+
++───────────────────────────────+
+| local0 (also, local_array[3]) | 0xffffdf138fbf
++───────────────────────────────+
+| local_array[2]                | 0xffffdf138fbe
++───────────────────────────────+
+| local_array[1]                | 0xffffdf138fbd
++───────────────────────────────+
+| local_array[0]                | 0xffffdf138fbc
++───────────────────────────────+
+| local1                        | 0xffffdf138fbb
++───────────────────────────────+
+
+In fact, this is a very common error called *array out of bounds*. As the name suggests, it is an
+error where an array variable is used to access memory locations outside the array's bounds.
+
+Beside arrays, we can use any local variable to manipulate other local variables. Add the following
+function and call it from `main()`.
+
+```c
+void test2(void) {
+  int8_t local_array[3] = {2, 3, 4};
+  int8_t local0 = 5;
+
+  printf("test2:\n");
+  printf("  local_array[1] value: %d\n", local_array[1]);
+
+  int8_t *ptr = &local0 + 2; // This points to `local_array[1]`
+  *ptr = 36;
+
+  printf("  local_array[1] value: %d\n", local_array[1]);
+}
+```
+
+Before running this code, think about what the output will be. The first `printf()` should print out
+the value of `local_array[1]`. How about the second `printf()`? In `int8_t *ptr = &local0 + 2;` we
+are adding 2 to the address of `local0`, which is the location for `local_array[1]`. Since `ptr`
+points to `local_array[1]`, `*ptr = 36;` should assign 36 to `local_array[1]`. We can visualize this
+again.
+
++──────────────────────────────────+
+| local_array[2]                   | 0xffffdf138fbe
++──────────────────────────────────+
+| local_array[1] (or *(&local0+2)) | 0xffffdf138fbd
++──────────────────────────────────+
+| local_array[0]                   | 0xffffdf138fbc
++──────────────────────────────────+
+| local0                           | 0xffffdf138fbb
++──────────────────────────────────+
+
+The important point here is that it is possible to use a local variable's address to access other
+local variables. This often causes problems, generally called *stack corruption*---you access stack
+locations unintentionally and corrupts the stack. Thus, we need to be extremely careful when using
+arrays and pointers.
+
+(You can stop recording and come back later, or continue on.)
+
+### Stack with function calls
+
+The stack not only stores local variables but also stores arguments passed for function calls. Since
+there are potentially many function calls, the stack organizes a function's local variables and
+arguments in a place called a *stack frame*. Whenever there is a new function call, the stack
+creates a new stack frame and stores local variables, arguments, and other things necessary.
+
+The stack with stack frames looks like the following.
+
++─────────────────────+ Higher address
+| main() stack frame  |
++─────────────────────+
+| foo() stack frame   |
++─────────────────────+
+| (grows down)        |
++─────────────────────+ Lower address
+
+Here, we are showing an example where, inside `main()`, there is a function call to `foo()`. For
+each function call, a new stack frame gets created and pushed to the stack, and it grows downward.
+Thus, if `foo()` makes a function call to `bar()`, the stack will look like the following.
+
++─────────────────────+ Higher address
+| main() stack frame  |
++─────────────────────+
+| foo() stack frame   |
++─────────────────────+
+| bar() stack frame   |
++─────────────────────+
+| (grows down)        |
++─────────────────────+ Lower address
+
+If `bar()` is done and the execution returns to `foo()`, the stack frame for `bar()` will be
+popped, and the stack will look like the following.
+
++─────────────────────+ Higher address
+| main() stack frame  |
++─────────────────────+
+| foo() stack frame   |
++─────────────────────+
+| (grows down)        |
++─────────────────────+ Lower address
+
+Now, a single stack frame *generally* looks like the diagram below, but it depends on many factors
+such as your CPU, compiler, OS, configuration, etc. The diagram uses the basic Linux configuration
+of the 32-bit x86 CPUs as an example.
+
++────────────────────────+ Higher address
+| (more arguments)       |
++────────────────────────+
+| argument0              |
++────────────────────────+
+| Return address         |
++────────────────────────+
+| Previous frame pointer |
++────────────────────────+
+| local_variable0        |
++────────────────────────+
+| (more local variables) |
++────────────────────────+ Lower address
+
+Below are a few points about the diagram. We use *caller* and *callee* to distinguish the function
+that makes a function call (caller) and the function that gets invoked (callee).
+
+* Function arguments occupy the highest-addressed region of a stack frame. (This is traditionally
+  called the *bottom* of the stack.)
+* A stack frame saves the *return address*, which points to the caller's code that needs to be
+  executed right after the function call returns. This is necessary to remember where to go back
+  when the callee's code execution is done.
+* A stack frame also saves the *previous frame pointer*, which points to the stack frame of the
+  caller. This is necessary when popping the callee's stack frame after the callee's code execution
+  is done.
+
+The important point here is again the same point made earlier. Since these are all stored in the
+same memory region, it is possible to use arrays/pointers of local variables to access other stack
+frames, leading to potential stack corruption. Let's do an activity to understand this more. Make
+sure you `record` if you are not doing it already.
+
+Create a file named `stack_frames.c` and write the code below. Also, add a new target `stack_frames`
+to the same Makefile from previous sections that produces an executable of the same name with `make
+stack_frames`. We will first print out the addresses of the variables in the program to understand
+where they are located in the stack.
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+
+void foo(uint8_t argument) {
+  uint8_t foo_local = 16;
+  printf("Local variable address in foo: %p\n", &foo_local);
+}
+
+int main(void) {
+  uint8_t main_local = 32;
+  foo(main_local);
+  printf("Local variable address in main: %p\n", &main_local);
+}
+```
+
+Compile and run the program. You will get an output similar to the following:
+
+```bash
+Local variable address in foo: 0xffffd064d30e
+Local variable address in main: 0xffffd064d32f
+```
+
+The address difference is 0x21 or 33 bytes. Understanding this requires an in-depth discussion about
+how things work, which we won't get into here. But briefly, our VM uses a 64-bit CPU and a stack
+allocation always takes up a multiple of 16 bytes for faster execution. Thus, in order to store
+`uint8_t main_local` in `main()`, the stack allocates 16 bytes instead of one byte. After that, the
+return address and the previous frame pointer shown in the diagram above take up 8 bytes each.
+Lastly, `uint8_t argument` takes up another one byte. Thus, those four variables take up 33 bytes in
+the stack. The local variable `uint8_t foo_local` comes after those variables in the stack, so the
+address difference between `uint8_t foo_local` and `uint8_t main_local` is 33 bytes.
+
+Needless to say, misusing arrays or pointers with `uint8_t foo_local` in `foo()` can affect `uint8_t
+argument`, the return address, the previous frame pointer, and `uint8_t main_local`. In fact, this
+can cause a very serious problem known as *stack buffer overflow attack*, where the return address
+is replaced with an address that points to a malicious piece of code by overflowing a buffer. The
+simplest example, though not an actual attack, is something like the following:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+  char buffer[5] = {0};
+  scanf("%s", buffer);
+}
+```
+
+Create a file named `buffer_overflow.c` and write the above code. You will immediately see that our
+linter complains about `scanf()` being insecure, which is exactly what this example is about. Add a
+new target for `make buffer_overflow` to produce an executable named `buffer_overflow`. Compile and
+run it. `scanf()` requires an input, so provide `this-is-a-long-string` as an input. It is going to
+cause a segmentation fault.
+
+Since this is a common, yet serious problem, there is a sanitizer that detects this problem. In the
+Makefile, add a new target named `buffer_overflow_sanitizer`, that produces an executable of the
+same name. There, enable the `AddressSanitizer` by adding a compiler option `-fsanitize=address`.
+Compile and run it. Provide the same input `this-is-a-long-string`. It should immediately show a
+long error message that explains the stack buffer overflow error.
+
+The reason is that the size of `buffer` is 5 bytes and `this-is-a-long-string` is 22 bytes, which is
+clearly more than 5 bytes. When `scanf()` stores it in `buffer`, it *overflows* and overruns the
+stack as follows.
+
++─────+
+| ... |
++─────+
+| '-' | buffer[7] (beyond the bound; overwriting the stack)
++─────+
+| 's' | buffer[6] (beyond the bound; overwriting the stack)
++─────+
+| 'i' | buffer[5] (beyond the bound; overwriting the stack)
++─────+
+| '-' | buffer[4]
++─────+
+| 's' | buffer[3]
++─────+
+| 'i' | buffer[2]
++─────+
+| 'h' | buffer[1]
++─────+
+| 't' | buffer[0]
++─────+
+
+Other standard library functions that read user inputs, e.g., `gets()`, have similar problems and
+their use is explicitly discouraged. For example, if you look at the manpage of `gets()` (`man
+gets`), you will see that the description says `Never use this function`. You can use a safer
+alternative, such as `fgets()`, where you need to specify the size that you can read. (Of course,
+you need to provide the right size to be safe.)
+
+In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you
+submit all the files you created for this assignment, including `.record/` and `.vim/`.
+
+# Next steps
+
+You need to accept the invite for the next assignment (A8).
+
+* Go to this URL: [https://classroom.github.com/a/PGPiPLGw](https://classroom.github.com/a/PGPiPLGw)
+* Accept the invite for Assignment 8 (A8).
+* If you are not in `units/03-memory` directory, go to that directory.
+* Clone the assignment repo.
