@@ -23,50 +23,56 @@ space to actually run the program.
 Below is a simplified diagram of how Linux organizes the memory space when it runs a program.
 
 ```bash
-.───────────────────────────────────────.  Address 2^n - 1, where n is the number of address bits
-|                                       |  (0xFFFFFFFF for the 32-bit address space)
-|         Kernel address space          |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                 Stack                 |
-|               (grows ↓)               |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|             Memory mapping            |
-|               (grows ↓)               |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                 Heap                  |
-|               (grows ↑)               |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                 BSS                   |
-| (Uninitialized global or static data) |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|                 Data                  |
-|  (Initialized global or static data)  |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-|              Text (Code)              |
-|                                       |
-+───────────────────────────────────────+
-|                                       |
-'───────────────────────────────────────'  Address 0x00000000
+.──────────────────────.
+|                      | Address 2^n - 1
+| Kernel address space | (n is the number of address bits)
+|                      |
++──────────────────────+
+|                      |
+| Stack                |
+| (grows ↓)            |
+|                      |
++──────────────────────+
+|                      |
+|                      |
++──────────────────────+
+|                      |
+| Memory mapping       |
+| (grows ↓)            |
+|                      |
++──────────────────────+
+|                      |
+|                      |
++──────────────────────+
+|                      |
+| Heap                 |
+| (grows ↑)            |
+|                      |
++──────────────────────+
+|                      |
++──────────────────────+
+|                      |
+| BSS                  |
+| (Uninitialized       |
+|  global              |
+|  or static data)     |
+|                      |
++──────────────────────+
+|                      |
+| Data                 |
+| (Initialized         |
+|  global              |
+|  or static data)     |
+|                      |
++──────────────────────+
+|                      |
+| Text (Code)          |
+|                      |
++──────────────────────+
+|                      |
+|                      |
+|                      | Address 0
+'──────────────────────'
 ```
 
 Before examining the diagram in more detail, there are a few things to note.
@@ -225,6 +231,7 @@ bss_char1 address: 0xaaaacdfe103c
 Based on this output, you can draw a diagram that visualizes how these are stored such as the
 following:
 
+```bash
 +────────────+
 | bss_char1  | 0xaaaacdfe103c
 +────────────+
@@ -236,6 +243,7 @@ following:
 +────────────+
 | data_char0 | 0xaaaacdfe1038
 +────────────+
+```
 
 There are a few important points to observe:
 
@@ -306,6 +314,7 @@ test0:
 
 You can visualize this as follows:
 
+```bash
 +────────────────+
 |     local0     | 0xffffdf138fbf
 +────────────────+
@@ -317,6 +326,7 @@ You can visualize this as follows:
 +────────────────+
 |     local1     | 0xffffdf138fbb
 +────────────────+
+```
 
 These local variables are placed in the stack in the order of definition. However, the stack grows
 *downward*, meaning that a variable occupies a higher address first. In the above example, `local0`
@@ -364,6 +374,7 @@ value of `local0`. However, the second `printf()` prints out 24, not 1. What hap
 that `local_array[3]` points to the memory address of `local0`. So when we assign 24 to
 `local_array[3]`, we are writing to the memory space occupied by `local0`. Let's visualize this.
 
+```bash
 +───────────────────────────────+
 | local0 (also, local_array[3]) | 0xffffdf138fbf
 +───────────────────────────────+
@@ -375,6 +386,7 @@ that `local_array[3]` points to the memory address of `local0`. So when we assig
 +───────────────────────────────+
 | local1                        | 0xffffdf138fbb
 +───────────────────────────────+
+```
 
 In fact, this is a very common error called *array out of bounds*. As the name suggests, it is an
 error where an array variable is used to access memory locations outside the array's bounds.
@@ -403,6 +415,7 @@ are adding 2 to the address of `local0`, which is the location for `local_array[
 points to `local_array[1]`, `*ptr = 36;` should assign 36 to `local_array[1]`. We can visualize this
 again.
 
+```bash
 +──────────────────────────────────+
 | local_array[2]                   | 0xffffdf138fbe
 +──────────────────────────────────+
@@ -412,6 +425,7 @@ again.
 +──────────────────────────────────+
 | local0                           | 0xffffdf138fbb
 +──────────────────────────────────+
+```
 
 The important point here is that it is possible to use a local variable's address to access other
 local variables. This often causes problems, generally called *stack corruption*---you access stack
@@ -429,6 +443,7 @@ creates a new stack frame and stores local variables, arguments, and other thing
 
 The stack with stack frames looks like the following.
 
+```bash
 +─────────────────────+ Higher address
 | main() stack frame  |
 +─────────────────────+
@@ -436,11 +451,13 @@ The stack with stack frames looks like the following.
 +─────────────────────+
 | (grows down)        |
 +─────────────────────+ Lower address
+```
 
 Here, we are showing an example where, inside `main()`, there is a function call to `foo()`. For
 each function call, a new stack frame gets created and pushed to the stack, and it grows downward.
 Thus, if `foo()` makes a function call to `bar()`, the stack will look like the following.
 
+```bash
 +─────────────────────+ Higher address
 | main() stack frame  |
 +─────────────────────+
@@ -450,10 +467,12 @@ Thus, if `foo()` makes a function call to `bar()`, the stack will look like the 
 +─────────────────────+
 | (grows down)        |
 +─────────────────────+ Lower address
+```
 
 If `bar()` is done and the execution returns to `foo()`, the stack frame for `bar()` will be
 popped, and the stack will look like the following.
 
+```bash
 +─────────────────────+ Higher address
 | main() stack frame  |
 +─────────────────────+
@@ -461,11 +480,13 @@ popped, and the stack will look like the following.
 +─────────────────────+
 | (grows down)        |
 +─────────────────────+ Lower address
+```
 
 Now, a single stack frame *generally* looks like the diagram below, but it depends on many factors
 such as your CPU, compiler, OS, configuration, etc. The diagram uses the basic Linux configuration
 of the 32-bit x86 CPUs as an example.
 
+```bash
 +────────────────────────+ Higher address
 | (more arguments)       |
 +────────────────────────+
@@ -479,6 +500,7 @@ of the 32-bit x86 CPUs as an example.
 +────────────────────────+
 | (more local variables) |
 +────────────────────────+ Lower address
+```
 
 Below are a few points about the diagram. We use *caller* and *callee* to distinguish the function
 that makes a function call (caller) and the function that gets invoked (callee).
@@ -565,6 +587,7 @@ The reason is that the size of `buffer` is 5 bytes and `this-is-a-long-string` i
 clearly more than 5 bytes. When `scanf()` stores it in `buffer`, it *overflows* and overruns the
 stack as follows.
 
+```bash
 +─────+
 | ... |
 +─────+
@@ -584,6 +607,7 @@ stack as follows.
 +─────+
 | 't' | buffer[0]
 +─────+
+```
 
 Other standard library functions that read user inputs, e.g., `gets()`, have similar problems and
 their use is explicitly discouraged. For example, if you look at the manpage of `gets()` (`man
