@@ -268,10 +268,9 @@ static variables. This helps ensure that these variables start with a known and 
 ## Task 2: Understanding the stack segment
 
 The stack segment, sometimes referred to as *the call stack* or just *the stack*, is the memory
-space where local variables, function parameters, and function return values are stored. A typical
-program has multiple functions, and the stack's size changes as different functions get called.
-Let's do a couple of activities to learn about this more. Make sure you `record` if you are not
-doing it already.
+space where local variables and function arguments are stored. A typical program has multiple
+functions, and the stack's size changes as different functions get called. Let's do a couple of
+activities to learn about this more. Make sure you `record` if you are not doing it already.
 
 ### Stack basics
 
@@ -616,7 +615,7 @@ alternative, such as `fgets()`, where you need to specify the size that you can 
 you need to provide the right size to be safe.)
 
 In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you
-submit all the files you created for this assignment, including `.record/` and `.vim/`.
+submit all the files you created for this assignment, including `.record/` and `.nvim/`.
 
 # Next steps
 
