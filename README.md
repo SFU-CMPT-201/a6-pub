@@ -81,7 +81,7 @@ Before examining the diagram in more detail, there are a few things to note.
   diagram is *finite*. This means that the memory space your program can use is also finite.
 * A program accesses memory by address. The top of the diagram is the highest memory address and the
   bottom of the diagram is the lowest memory address.
-* Each memory address identifies a single byte.
+* Each memory address identifies a single byte. This is called `byte-addressable`.
 * The memory address space starts from 0.
 * The memory layout consists of *segments*, e.g., the kernel address segment, the stack segment,
   etc.
@@ -105,16 +105,36 @@ Before examining the diagram in more detail, there are a few things to note.
     * What this means is that the size of a pointer type effectively limits the size of the memory
       space that a program can use. For a 32-bit pointer, since its value can only range between 0
       and 2^32-1, the range of memory addresses must be between 0 and 2^32-1. This effectively
-      limits the size of the memory address space.
+      limits the size of the memory address space. Since each address is byte addressable and 2^32
+      is 4 * 2^30, a 32-bit pointer can identify 4GB (gigabytes) of memory. In case of a 64-bit
+      pointer (16 * 2^60), it is 16 exabytes.
+* Since a pointer value is an address, you can perform *pointer arithmetic*, meaning you can use
+  arithmetic operators to change the value of a pointer. You can use four operators, `+`, `-`, `++`,
+  and `--`. They *almost* work as expected, e.g., `+` increments the value of a pointer and `-`
+  decrements the value of a pointer. But you have to keep in mind the following two points.
+    * Meaning of "one": If you have a pointer variable `ptr` and increment it by one, e.g., `ptr +
+      1`, it *does not* mean that you are adding one to the address value. The meaning of one in
+      pointer arithmetic is *the size of the pointer type*. For example, if your pointer type is
+      `int` (i.e., if you declare `int *ptr`), `ptr + 1` increments the address value in `ptr` by
+      the size of `int`, i.e., 4 bytes. If your pointer type is `char` (i.e., if you declare `char
+      *ptr`), `ptr + 1` increments the address value in `ptr` by the size of `char`, i.e., 1 byte.
+      This applies to all operators (`+`, `-`, `++`, and `--`). You always need to be aware of the
+      size of your type and use it as the unit of calculation.
+    * Pointers and arrays: Using pointer arithmetic, you can use pointers and arrays
+      interchangeably. For example, let's assume you declare `int *address` in your code. Here,
+      `address[i]` works exactly the same as `*(address + i)`. They both allow you to access the
+      memory location that is *i* integers higher from the memory location pointed to by `address`.
+      In other words, it is as if you declared an array, `int address[]`,  instead of a pointer,
+      `int *address`, since arrays and pointers are interchangeable.
 
 Let's examine the address layout segment-by-segment from the bottom. There are some activities you
 need to do, so don't forget to start recording with `record`.
 
 ## Task 0: Understanding the text segment
 
-The OS loads the program itself to this segment, i.e., the text segment contains the code of the
-program. This means that your code resides somewhere in memory when you're running your program. In
-fact, we can examine the memory and print out your (compiled) code at run time.
+The OS loads the program itself to this segment, i.e., the text segment contains the (compiled) code
+of the program. This means that your code resides somewhere in memory when you're running your
+program. In fact, we can examine the memory and print out your (compiled) code at run time.
 
 Let's create a file named `main_dump.c` and write the following program. (Don't forget that you need
 to `record`.)
@@ -125,8 +145,10 @@ to `record`.)
 
 int main(void) {
   int (*main_ptr)(void); // Define a function pointer
-  main_ptr = &main; // Assign the address of main() to the pointer. If you'd like, you can omit `&`.
-  uint8_t *start_address = (uint8_t *)main_ptr; // Cast it to an unsigned byte pointer for reading
+  main_ptr = &main; // Assign the address of main() to the pointer. If you'd
+                    // like, you can omit `&`.
+  uint8_t *start_address =
+      (uint8_t *)main_ptr; // Cast it to an unsigned byte pointer for reading
 
   printf("Dumping memory from address %p:\n", start_address);
 
@@ -158,11 +180,12 @@ feature](https://en.wikipedia.org/wiki/Function_pointer) to get the address of t
 * You can replace the first three lines with a single line, `uint8_t *start_address = (uint8_t
   *)main;`. We're using those three lines for demonstration purposes.
 * The `for` loop performs 64 iterations, where each iteration reads one byte via `start_address[i]`.
-  Since `start_address[i]` reads the *i*th byte from the address stored in `start_address`, and
+  (Notice that `start_address` is of type `uint8_t *` which means it is a byte pointer.) Since
+  `start_address[i]` reads the *i*th element from the address stored in `start_address`, and
   `start_address` has the address of the function `main()`, the `for` loop effectively reads the
   first 64 bytes of the code in the function `main()`.
 * The rest of the code is just printing and formatting, but one thing to note is that `%p` for
-  `printf()` is the format string to use to print out a pointer value, i.e., a memory address.
+  `printf()` is the format string to print out a pointer value, i.e., a memory address.
 
 Now, write a Makefile that produces an executable named `main_dump` with `make main_dump`. Make sure
 you compile it with basic options, e.g., just `-o`, since we don't want the compiler to do extra
@@ -204,8 +227,8 @@ char data_char1 = '1';
 int main() {
   printf("data_char0 address: %p\n", &data_char0);
   printf("data_char1 address: %p\n", &data_char1);
-  printf("bss_char0 address: %p\n", &bss_char0);
-  printf("bss_char1 address: %p\n", &bss_char1);
+  printf("bss_char0 address:  %p\n", &bss_char0);
+  printf("bss_char1 address:  %p\n", &bss_char1);
 
   return 0;
 }
@@ -224,8 +247,8 @@ it. You should get an output similar to the following:
 ```bash
 data_char0 address: 0xaaaacdfe1038
 data_char1 address: 0xaaaacdfe1039
-bss_char0 address: 0xaaaacdfe103b
-bss_char1 address: 0xaaaacdfe103c
+bss_char0 address:  0xaaaacdfe103b
+bss_char1 address:  0xaaaacdfe103c
 ```
 
 Based on this output, you can draw a diagram that visualizes how these are stored such as the
@@ -288,11 +311,11 @@ void test0(void) {
   int8_t local1 = 5;
 
   printf("test0:\n");
-  printf("  local0 address: %p\n", &local0);
+  printf("  local0 address:         %p\n", &local0);
   printf("  local_array[0] address: %p\n", local_array);
   printf("  local_array[1] address: %p\n", (local_array + 1));
   printf("  local_array[2] address: %p\n", (local_array + 2));
-  printf("  local1 address: %p\n", &local1);
+  printf("  local1 address:         %p\n", &local1);
 }
 
 int main(void) {
@@ -304,11 +327,11 @@ Compile and run it. You should get an output similar to the following:
 
 ```bash
 test0:
-  local0 address: 0xffffdf138fbf
+  local0 address:         0xffffdf138fbf
   local_array[0] address: 0xffffdf138fbc
   local_array[1] address: 0xffffdf138fbd
   local_array[2] address: 0xffffdf138fbe
-  local1 address: 0xffffdf138fbb
+  local1 address:         0xffffdf138fbb
 ```
 
 You can visualize this as follows:
@@ -529,7 +552,7 @@ where they are located in the stack.
 
 void foo(uint8_t argument) {
   uint8_t foo_local = 16;
-  printf("Local variable address in foo: %p\n", &foo_local);
+  printf("Local variable address in foo:  %p\n", &foo_local);
 }
 
 int main(void) {
@@ -542,7 +565,7 @@ int main(void) {
 Compile and run the program. You will get an output similar to the following:
 
 ```bash
-Local variable address in foo: 0xffffd064d30e
+Local variable address in foo:  0xffffd064d30e
 Local variable address in main: 0xffffd064d32f
 ```
 
@@ -608,14 +631,34 @@ stack as follows.
 +─────+
 ```
 
-Other standard library functions that read user inputs, e.g., `gets()`, have similar problems and
-their use is explicitly discouraged. For example, if you look at the manpage of `gets()` (`man
-gets`), you will see that the description says `Never use this function`. You can use a safer
-alternative, such as `fgets()`, where you need to specify the size that you can read. (Of course,
-you need to provide the right size to be safe.)
+Other standard library functions that read user inputs, e.g., `gets()`, or copy memory, e.g.,
+`strcpy()`, have similar problems and their use is explicitly discouraged or warned. For example, if
+you look at the man page of `gets()` (`man gets`), you will see that the description says **Never
+use this function**. Similarly, the man page of `strcpy()` says **Beware  of  buffer overruns!**.
+You can use safer alternatives, such as `fgets()` or `strncpy()`, where you need to specify the size
+that you want. (Of course, you need to provide the right size to be safe.)
 
-In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you
-submit all the files you created for this assignment, including `.record/` and `.nvim/`.
+It is also important to keep in mind that you don't have an unlimited stack. In fact, allocating too
+much memory with your local variables will cause a *stack overflow* error. To test this, create a
+file named `stack_overflow.c` and write the code below. Also, add a new target `stack_overflow` to
+the same Makefile from previous sections that produces an executable of the same name with `make
+stack_overflow`. When doing so, add a compiler option `-fsanitize=address` to enable the
+`AddressSanitizer`.
+
+```c
+int main(void) { char a[1048 * 1048 * 8] = {0}; }
+```
+
+Compile it, run it, and check the error message shown by the `AddressSanitizer`. It will explain the
+detected stack overflow error. As you can see, it does not take a lot to trigger a stack overflow
+error.
+
+You can check the various limits by a system call named `getrlimit()`. You can read about how to use
+it with `man getrlimit`.
+
+In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you stop
+recording, and submit all the files you created for this assignment including `.record/` and
+`.nvim/`.
 
 # Next steps
 
