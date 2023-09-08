@@ -1,4 +1,4 @@
-# Assignment 7: Memory layout
+# Assignment 7: Memory Layout
 
 When you have a program as an executable, it is a file stored on your disk. However, when you run
 the program, your OS loads the program to the main memory and starts executing the program. This
@@ -13,7 +13,7 @@ management. In this assignment, you will learn about Linux's memory layout. Alon
 also write a few C programs that examine the memory layout, which also give us an opportunity to
 take a deeper look at pointers.
 
-## Linux memory layout and C pointers
+## Linux Memory Layout and C Pointers
 
 Every single thing in your program, all the statements, all the variables, and all the function
 calls, occupies memory space when you run the program. Your OS organizes the memory space in a
@@ -130,7 +130,7 @@ Before examining the diagram in more detail, there are a few things to note.
 Let's examine the address layout segment-by-segment from the bottom. There are some activities you
 need to do, so don't forget to start recording with `record`.
 
-## Task 0: Understanding the text segment
+## Task 0: Understanding the Text Segment
 
 The OS loads the program itself to this segment, i.e., the text segment contains the (compiled) code
 of the program. This means that your code resides somewhere in memory when you're running your
@@ -205,7 +205,7 @@ program prints out.
 
 (You can stop recording and come back later, or continue with the next task.)
 
-## Task 1: Understanding the data and BSS segments
+## Task 1: Understanding the Data and BSS Segments
 
 The data and BSS segments store the values for static variables in a program. The data segment
 stores *initialized* global or static variables, while the BSS segment stores *uninitialized* global
@@ -288,14 +288,14 @@ static variables. This helps ensure that these variables start with a known and 
 
 (You can stop recording and come back later, or continue with the next task.)
 
-## Task 2: Understanding the stack segment
+## Task 2: Understanding the Stack Segment
 
 The stack segment, sometimes referred to as *the call stack* or just *the stack*, is the memory
 space where local variables and function arguments are stored. A typical program has multiple
 functions, and the stack's size changes as different functions get called. Let's do a couple of
 activities to learn about this more. Make sure you `record` if you are not doing it already.
 
-### Stack basics
+### Stack Basics
 
 Create a file named `stack_basics.c` and write the code below. Also, add a new target `stack_basics`
 to the same Makefile from previous sections that produces an executable of the same name with `make
@@ -456,7 +456,7 @@ arrays and pointers.
 
 (You can stop recording and come back later, or continue on.)
 
-### Stack with function calls
+### Stack with Function Calls
 
 The stack not only stores local variables but also stores arguments passed for function calls. Since
 there are potentially many function calls, the stack organizes a function's local variables and
@@ -660,7 +660,7 @@ In the next assignment, we will continue the discussion on Linux's memory layout
 recording, and submit all the files you created for this assignment including `.record/` and
 `.nvim/`.
 
-# Next steps
+# Next Steps
 
 You need to accept the invite for the next assignment (A8).
 
