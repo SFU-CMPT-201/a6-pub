@@ -664,7 +664,7 @@ recording, and submit all the files you created for this assignment including `.
 
 You need to accept the invite for the next assignment (A8).
 
-* Go to this URL: [https://classroom.github.com/a/PGPiPLGw](https://classroom.github.com/a/PGPiPLGw)
+* Get the URL for A8. Go to the URL on your browser.
 * Accept the invite for Assignment 8 (A8).
 * If you are not in `units/03-memory` directory, go to that directory.
 * Clone the assignment repo.
