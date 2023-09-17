@@ -1,4 +1,4 @@
-# Assignment 7: Memory Layout
+# Assignment 6: Memory Layout
 
 When you have a program as an executable, it is a file stored on your disk. However, when you run
 the program, your OS loads the program to the main memory and starts executing the program. This
@@ -662,9 +662,9 @@ recording, and submit all the files you created for this assignment including `.
 
 # Next Steps
 
-You need to accept the invite for the next assignment (A8).
+You need to accept the invite for the next assignment (A7).
 
-* Get the URL for A8. Go to the URL on your browser.
-* Accept the invite for Assignment 8 (A8).
+* Get the URL for A7. Go to the URL on your browser.
+* Accept the invite for Assignment 7 (A7).
 * If you are not in `units/03-memory` directory, go to that directory.
 * Clone the assignment repo.
