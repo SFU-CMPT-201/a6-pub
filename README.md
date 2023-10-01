@@ -10,7 +10,7 @@ When an OS loads a program to memory, it uses a particular format suitable for e
 This format is called *memory layout*. Understanding this layout is crucial for writing more
 reliable and correct code, and also for deepening your understanding of pointers and memory
 management. In this assignment, you will learn about Linux's memory layout. Along the way, you will
-also write a few C programs that examine the memory layout, which also give us an opportunity to
+also write a few C programs that examine the memory layout, which also gives us an opportunity to
 take a deeper look at pointers.
 
 ## Linux Memory Layout and C Pointers
@@ -81,7 +81,7 @@ Before examining the diagram in more detail, there are a few things to note.
   diagram is *finite*. This means that the memory space your program can use is also finite.
 * A program accesses memory by address. The top of the diagram is the highest memory address and the
   bottom of the diagram is the lowest memory address.
-* Each memory address identifies a single byte. This is called `byte-addressable`.
+* Each memory address identifies a single byte. This is called *byte-addressable memory*.
 * The memory address space starts from 0.
 * The memory layout consists of *segments*, e.g., the kernel address segment, the stack segment,
   etc.
@@ -190,7 +190,7 @@ feature](https://en.wikipedia.org/wiki/Function_pointer) to get the address of t
 Now, write a Makefile that produces an executable named `main_dump` with `make main_dump`. Make sure
 you compile it with basic options, e.g., just `-o`, since we don't want the compiler to do extra
 things that could make it difficult to access the text segment. Once that's done, compile and run it
-to check the output. What's printed out is the first 64 bytes of `main()`'s compile code loaded in
+to check the output. What's printed out is the first 64 bytes of `main()`'s compiled code loaded in
 the text segment in memory.
 
 How do we know if this is correct code? There's a utility called `objdump` that prints out what is
