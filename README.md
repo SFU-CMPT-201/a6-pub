@@ -599,15 +599,16 @@ new target for `make buffer_overflow` to produce an executable named `buffer_ove
 run it. `scanf()` requires an input, so provide `this-is-a-long-string` as an input. It is going to
 cause a segmentation fault.
 
-Since this is a common, yet serious problem, there is a sanitizer that detects this problem. In the
-Makefile, add a new target named `buffer_overflow_sanitizer`, that produces an executable of the
-same name. There, enable the `AddressSanitizer` by adding a compiler option `-fsanitize=address`.
-Compile and run it. Provide the same input `this-is-a-long-string`. It should immediately show a
-long error message that explains the stack buffer overflow error.
+Before looking into the problem further, there is one important thing to mention. Since this is a
+common, yet serious problem, there is a sanitizer that detects this problem. In the Makefile, add a
+new target named `buffer_overflow_sanitizer`, that produces an executable of the same name. There,
+enable the `AddressSanitizer` by adding a compiler option `-fsanitize=address`. Compile and run it.
+Provide the same input `this-is-a-long-string`. It should immediately show a long error message that
+explains the stack buffer overflow error.
 
-The reason is that the size of `buffer` is 5 bytes and `this-is-a-long-string` is 22 bytes, which is
-clearly more than 5 bytes. When `scanf()` stores it in `buffer`, it *overflows* and overruns the
-stack as follows.
+Now, the reason for this problem is that the size of `buffer` is 5 bytes and `this-is-a-long-string`
+is 22 bytes, which is clearly more than 5 bytes. When `scanf()` stores it in `buffer`, it
+*overflows* and overruns the stack as follows.
 
 ```bash
 +─────+
@@ -633,8 +634,8 @@ stack as follows.
 
 Other standard library functions that read user inputs, e.g., `gets()`, or copy memory, e.g.,
 `strcpy()`, have similar problems and their use is explicitly discouraged or warned. For example, if
-you look at the man page of `gets()` (`man gets`), you will see that the description says **Never
-use this function**. Similarly, the man page of `strcpy()` says **Beware  of  buffer overruns!**.
+you look at the man page of `gets()` (`man gets`), you will see that the description says *Never
+use this function*. Similarly, the man page of `strcpy()` says *Beware  of  buffer overruns!*.
 You can use safer alternatives, such as `fgets()` or `strncpy()`, where you need to specify the size
 that you want. (Of course, you need to provide the right size to be safe.)
 
@@ -659,6 +660,14 @@ it with `man getrlimit`.
 In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you stop
 recording, and submit all the files you created for this assignment including `.record/` and
 `.nvim/`.
+
+## Stack Protection
+
+Since a developer can misuse the stack in many ways as described above, popular compilers such as
+GCC and Clang provide stack protection mechanisms. [This
+article](https://developers.redhat.com/articles/2022/06/02/use-compiler-flags-stack-protection-gcc-and-clang)
+discusses the mechanisms in detail. It is a good read to understand the available features for stack
+protection.
 
 # Next Steps
 
