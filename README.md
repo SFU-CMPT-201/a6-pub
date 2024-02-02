@@ -357,7 +357,7 @@ address above `local1`. Notice that for `local_array`, a lower index still occup
 
 Since all the variables are placed consecutively in the stack, we need to be careful when using
 pointers or arrays, as we can inadvertently access other variables. Add the following function to
-`stack.c` and call the function from `main()`.
+`stack_basics.c` and call the function from `main()`.
 
 ```c
 void test1(void) {
