@@ -13,6 +13,11 @@ management. In this assignment, you will learn about Linux's memory layout. Alon
 also write a few C programs that examine the memory layout, which also gives us an opportunity to
 take a deeper look at pointers.
 
+## Important Note
+
+You should not copy and paste the code examples here. If you do, you ***will not*** get any credit
+for this assignment.
+
 ## Linux Memory Layout and C Pointers
 
 Every single thing in your program, all the statements, all the variables, and all the function
