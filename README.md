@@ -79,6 +79,8 @@ Before examining the diagram in more detail, there are a few things to note.
 
 * The memory layout determines the memory space that a program can use. Notice that the size of the
   diagram is *finite*. This means that the memory space your program can use is also finite.
+* When you `fork()` a child process, this whole layout is cloned, i.e., the child becomes an exact
+  copy of the parent.
 * A program accesses memory by address. The top of the diagram is the highest memory address and the
   bottom of the diagram is the lowest memory address.
 * Each memory address identifies a single byte. This is called *byte-addressable memory*.
