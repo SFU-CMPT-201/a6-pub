@@ -13,12 +13,6 @@ management. In this assignment, you will learn about Linux's memory layout. Alon
 also write a few C programs that examine the memory layout, which also gives us an opportunity to
 take a deeper look at pointers.
 
-## Important Note
-
-You ***should not*** copy and paste the code or command examples. You have to type them yourself
-and understand the meanings. If you copy and paste, you ***will not*** get any credit for this
-assignment.
-
 ## Linux Memory Layout and C Pointers
 
 Every single thing in your program, all the statements, all the variables, and all the function
@@ -665,9 +659,8 @@ error.
 You can check the various limits by a system call named `getrlimit()`. You can read about how to use
 it with `man getrlimit`.
 
-In the next assignment, we will continue the discussion on Linux's memory layout. Make sure you stop
-recording, and submit all the files you created for this assignment including `.record/` and
-`.nvim/`.
+Once everything is done, make sure you stop recording. In the next assignment, we will continue the
+discussion on Linux's memory layout.
 
 ## Stack Protection
 
@@ -676,6 +669,24 @@ GCC and Clang provide stack protection mechanisms. [This
 article](https://developers.redhat.com/articles/2022/06/02/use-compiler-flags-stack-protection-gcc-and-clang)
 discusses the mechanisms in detail. It is a good read to understand the available features for stack
 protection.
+
+## Submission
+
+Make sure you use git to push all the files/directories you created, including `.nvim/` and
+`.record/`, for grading.
+
+As with previous assignments, make sure you run `a6-checker` to check if your work is ready for
+grading. `a6-checker` performs the following.
+* It checks if you have correct recording files. You will receive a 0 if this fails.
+* It checks if you have used `nvim` correctly. You will receive a 0 if this fails.
+* It flags if you have copied and pasted anything. You will receive a 0 if this fails.
+* It performs some basic checks for the tasks above.
+* Note that if a check fails, it does not always tell you why. You need to debug it by yourself
+  and find out.
+* The checker is not a grader but if it says that everything is good and if you are done with
+  the above tasks, you will get the full credit.
+* It is entirely *your responsibility* to run `a6-checker` before submitting your work. If you
+  don't do it, you may get an unexpected grade.
 
 # Next Steps
 
